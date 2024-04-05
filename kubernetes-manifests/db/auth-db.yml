@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: auth-db-service
+  name: auth-db-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: auth-db-port
+      port: 5436
+      targetPort: auth-db-port
+  selector:
+    app: auth-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: auth-db
+  name: auth-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-db
+  template:
+    metadata:
+      labels:
+        app: auth-db
+    spec:
+      containers:
+        - image: postgres:14-alpine3.19
+          imagePullPolicy: Always
+          name: auth-db
+          ports:
+            - name: auth-db-port
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "auth-db"
+            - name: POSTGRES_USER
+              value: "parth"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdata
+      volumes:
+        - name: postgresdata
+          persistentVolumeClaim:
+            claimName: auth-pvc

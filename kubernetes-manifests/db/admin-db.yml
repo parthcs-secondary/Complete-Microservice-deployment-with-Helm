@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: admin-db-service
+  name: admin-db-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: admin-db-port
+      port: 5432
+      targetPort: admin-db-port
+  selector:
+    app: admin-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: admin-db
+  name: admin-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-db
+  template:
+    metadata:
+      labels:
+        app: admin-db
+    spec:
+      containers:
+        - image: postgres:14-alpine3.19
+          imagePullPolicy: Always
+          name: admin-db
+          ports:
+            - name: admin-db-port
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "admin-db"
+            - name: POSTGRES_USER
+              value: "parth"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdata
+      volumes:
+        - name: postgresdata
+          persistentVolumeClaim:
+            claimName: admin-pvc

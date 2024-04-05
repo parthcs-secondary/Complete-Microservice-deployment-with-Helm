@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: booking-db-service
+  name: booking-db-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: booking-db-port
+      port: 5433
+      targetPort: booking-db-port
+  selector:
+    app: booking-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: booking-db
+  name: booking-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-db
+  template:
+    metadata:
+      labels:
+        app: booking-db
+    spec:
+      containers:
+        - image: postgres:14-alpine3.19
+          imagePullPolicy: Always
+          name: booking-db
+          ports:
+            - name: booking-db-port
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "booking-db"
+            - name: POSTGRES_USER
+              value: "parth"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdata
+      volumes:
+        - name: postgresdata
+          persistentVolumeClaim:
+            claimName: booking-pvc

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: discovery-server
+  name: discovery-server
+spec:
+  type: NodePort
+  ports:
+    - name: discovery-port
+      port: 8761
+      targetPort: discovery-port
+      nodePort: 30005
+  selector:
+    app: discovery
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: discovery
+  name: discovery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery
+  template:
+    metadata:
+      labels:
+        app: discovery
+    spec:
+      containers:
+        - image: omscs17/discovery-server:latest
+          imagePullPolicy: Always
+          name: discovery
+          ports:
+            - name: discovery-port
+              containerPort: 8761

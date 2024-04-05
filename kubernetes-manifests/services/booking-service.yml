@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: booking-service
+  name: booking-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: booking-port
+      port: 8081
+      targetPort: booking-port
+  selector:
+    app: booking
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: booking
+  name: booking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking
+  template:
+    metadata:
+      labels:
+        app: booking
+    spec:
+      containers:
+        - image: omscs17/booking-service:latest
+          imagePullPolicy: Always
+          name: booking
+          ports:
+            - name: booking-port
+              containerPort: 8081
