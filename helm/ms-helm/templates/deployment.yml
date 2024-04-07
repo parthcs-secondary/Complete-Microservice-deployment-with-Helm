@@ -1,0 +1,87 @@
+{{- if .Values.apigateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: api-gateway-service
+  name: api-gateway-service
+spec:
+  type: NodePort
+  ports:
+    - name: apigateway-port
+      port: 8080
+      targetPort: apigateway-port
+      nodePort: 30004
+  selector:
+    app: api-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api-gateway
+  name: api-gateway
+spec:
+  replicas: {{ .Values.apigateway.replicas }}
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - image: omscs17/api-gateway-service:latest
+          imagePullPolicy: Always
+          name: api-gateway
+          ports:
+            - name: apigateway-port
+              containerPort: 8080
+{{- end }}
+
+
+
+{{- if .Values.discovery.enabled }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: discovery-server
+  name: discovery-server
+spec:
+  type: NodePort
+  ports:
+    - name: discovery-port
+      port: 8761
+      targetPort: discovery-port
+      nodePort: 30005
+  selector:
+    app: discovery
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: discovery
+  name: discovery
+spec:
+  replicas: {{ .Values.discovery.replicas }}
+  selector:
+    matchLabels:
+      app: discovery
+  template:
+    metadata:
+      labels:
+        app: discovery
+    spec:
+      containers:
+        - image: omscs17/discovery-server:latest
+          imagePullPolicy: Always
+          name: discovery
+          ports:
+            - name: discovery-port
+              containerPort: 8761
+
+{{- end }}
